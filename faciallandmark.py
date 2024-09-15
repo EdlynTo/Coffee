@@ -2,6 +2,34 @@ import cv2
 import dlib
 import numpy as np
 import time
+import pygame
+
+import os
+
+# Initialize pygame
+pygame.init()
+
+# Get screen dimensions
+screen_info = pygame.display.Info()
+screen_width = screen_info.current_w
+screen_height = screen_info.current_h
+
+# Calculate position for bottom right corner
+window_width, window_height = 100, 100
+x_position = screen_width - window_width
+y_position = screen_height - window_height
+
+# Set the environment variable to position the window
+os.environ['SDL_VIDEO_WINDOW_POS'] = f"{x_position},{y_position}"
+
+# Create the window
+window = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption('Bottom Right Window')
+
+# Run the Pygame window loop
+running = True
+
+
 
 def eye_aspect_ratio(eye):
     # Eye Aspect Ratio (EAR)
@@ -18,7 +46,7 @@ def detect_eye_closure():
     # Start webcam
     cap = cv2.VideoCapture(0)
     fps = cap.get(cv2.CAP_PROP_FPS)
-    closure_time_threshold = 1.5  # Eye closure duration in seconds
+    closure_time_threshold = 1 # Eye closure duration in seconds
 
     # Thresholds and variables
     EAR_THRESHOLD = 0.15
@@ -50,11 +78,15 @@ def detect_eye_closure():
 
                 if elapsed_time >= closure_time_threshold and not wake_up_printed:
                     print("WAKE UP")
+                    window.fill((255,255,255))
+                    pygame.display.update() 
                     wake_up_printed = True  # Ensure "WAKE UP" is printed only once
             else:
                 eyes_closed_start_time = None  # Reset the closed time when eyes open
                 wake_up_printed = False  # Reset the flag to allow for future "WAKE UP" detection
                 # print("Eyes opened")
+                window.fill((0,0,0))
+                pygame.display.update() 
 
             cv2.rectangle(frame, (face.left(), face.top()), (face.right(), face.bottom()), (255, 0, 0), 2)
 
@@ -67,4 +99,13 @@ def detect_eye_closure():
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    detect_eye_closure()
+    while running:
+        # Quit pygame
+        detect_eye_closure()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+    pygame.quit()
+
+
+
